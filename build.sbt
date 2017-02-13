@@ -41,7 +41,8 @@ lazy val chirpImpl = project("chirp-impl")
       lagomJavadslPersistenceJpa,
       "org.hibernate" % "hibernate-core" % "5.2.5.Final",
       lagomJavadslPubSub,
-      lagomJavadslTestKit
+      lagomJavadslTestKit,
+      "org.postgresql" % "postgresql" % "9.4.1212"
     )
   )
   .settings(lagomForkedTestSettings: _*)
