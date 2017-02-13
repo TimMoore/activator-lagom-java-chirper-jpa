@@ -39,7 +39,7 @@ lazy val chirpImpl = project("chirp-impl")
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceJpa,
-      "org.hibernate" % "hibernate-core" % "5.2.5.Final",
+      "org.eclipse.persistence" % "org.eclipse.persistence.jpa" % "2.6.4",
       lagomJavadslPubSub,
       lagomJavadslTestKit
     )

@@ -9,6 +9,7 @@ import com.lightbend.lagom.javadsl.persistence.ReadSide;
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor;
 import com.lightbend.lagom.javadsl.persistence.jpa.JpaReadSide;
 import com.lightbend.lagom.javadsl.persistence.jpa.JpaSession;
+import org.eclipse.persistence.config.PersistenceUnitProperties;
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
 import sample.chirper.chirp.api.Chirp;
@@ -29,14 +30,14 @@ class ChirpRepositoryImpl implements ChirpRepository {
     private static final String SELECT_HISTORICAL_CHIRPS =
             "SELECT NEW sample.chirper.chirp.api.Chirp(chirp.userId, chirp.message, chirp.timestamp, chirp.uuid) " +
                     "FROM ChirpJpaEntity chirp " +
-                    "WHERE userId IN :userIds " +
-                    "AND timestamp >= :timestamp " +
-                    "ORDER BY timestamp ASC";
+                    "WHERE chirp.userId IN :userIds " +
+                    "AND chirp.timestamp >= :timestamp " +
+                    "ORDER BY chirp.timestamp ASC";
     private static final String SELECT_RECENT_CHIRPS =
             "SELECT NEW sample.chirper.chirp.api.Chirp(chirp.userId, chirp.message, chirp.timestamp, chirp.uuid) " +
                     "FROM ChirpJpaEntity chirp " +
-                    "WHERE userId IN :userIds " +
-                    "ORDER BY timestamp DESC";
+                    "WHERE chirp.userId IN :userIds " +
+                    "ORDER BY chirp.timestamp DESC";
 
     private final JpaSession jpa;
 
@@ -97,7 +98,15 @@ class ChirpRepositoryImpl implements ChirpRepository {
         }
 
         private void createSchema() {
-            Persistence.generateSchema("default", ImmutableMap.of("hibernate.hbm2ddl.auto", "update"));
+            // Unfortunately, this doesn't work properly in EclipseLink,
+            // because once the EntityManagerFactory is created, it won't
+            // execute DDL even when explicitly invoked this way.
+            Persistence.generateSchema(
+                    "default",
+                    ImmutableMap.of(
+                            PersistenceUnitProperties.SCHEMA_GENERATION_DATABASE_ACTION, "create-or-extend-tables"
+                    )
+            );
         }
 
         private void insertChirp(EntityManager entityManager, ChirpAdded event) {

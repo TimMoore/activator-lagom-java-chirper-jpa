@@ -5,10 +5,14 @@
              version="2.1">
 
     <persistence-unit name="default" transaction-type="RESOURCE_LOCAL">
-        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <non-jta-data-source>DefaultDS</non-jta-data-source>
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <!-- Uncomment this to fix schema creation, but be careful when running on multiple nodes.
+                 See ChirpRepositoryImpl.createSchema for context.
+              -->
+            <!--<property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>-->
         </properties>
     </persistence-unit>
 
