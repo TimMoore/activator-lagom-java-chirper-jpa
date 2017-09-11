@@ -62,7 +62,8 @@ lazy val chirpImpl = project("chirp-impl")
       },
     resolvers += bintrayRepo("hajile", "maven"),
     libraryDependencies ++= Seq(
-      lagomJavadslPersistenceCassandra,
+      lagomJavadslPersistenceJpa,
+      "org.hibernate" % "hibernate-core" % "5.2.5.Final",
       lagomJavadslPubSub,
       lagomJavadslTestKit
     ) ++ BuildTarget.additionalLibraryDependencies
