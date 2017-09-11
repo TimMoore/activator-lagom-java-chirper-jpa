@@ -61,9 +61,13 @@ lazy val chirpImpl = project("chirp-impl")
         case v => Seq(v)
       },
     resolvers += bintrayRepo("hajile", "maven"),
+    resolvers += Resolver.mavenLocal,
+    resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceJpa,
       "org.hibernate" % "hibernate-core" % "5.2.5.Final",
+      "com.ibm.db2.jcc" % "db2jcc4" % "4.23.42",
+      "com.typesafe.slick" %% "slick-extensions" % "3.1.0",
       lagomJavadslPubSub,
       lagomJavadslTestKit
     ) ++ BuildTarget.additionalLibraryDependencies
