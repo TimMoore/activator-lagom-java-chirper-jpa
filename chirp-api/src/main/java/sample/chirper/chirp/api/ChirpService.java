@@ -9,11 +9,17 @@ import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
+import org.pcollections.PSequence;
+
+import java.util.List;
+
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface ChirpService extends Service {
 
   ServiceCall<Chirp, NotUsed> addChirp(String userId);
+
+  ServiceCall<NotUsed, PSequence<Chirp>> someChirps(String userId);
   
   ServiceCall<LiveChirpsRequest, Source<Chirp, ?>> getLiveChirps();
   
@@ -24,6 +30,7 @@ public interface ChirpService extends Service {
     // @formatter:off
     return named("chirpservice").withCalls(
         pathCall("/api/chirps/live/:userId", this::addChirp),
+        pathCall("/api/chirps/some/:userId", this::someChirps),
         namedCall("/api/chirps/live", this::getLiveChirps),
         namedCall("/api/chirps/history", this::getHistoricalChirps)
       ).withAutoAcl(true);

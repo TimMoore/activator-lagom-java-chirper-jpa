@@ -8,6 +8,8 @@ import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import org.pcollections.PSequence;
+import org.pcollections.PVector;
+import org.pcollections.TreePVector;
 import sample.chirper.chirp.api.Chirp;
 import sample.chirper.chirp.api.ChirpService;
 import sample.chirper.chirp.api.HistoricalChirpsRequest;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class ChirpServiceImpl implements ChirpService {
     private final PersistentEntityRegistry persistentEntities;
@@ -43,6 +46,13 @@ public class ChirpServiceImpl implements ChirpService {
             return persistentEntities.refFor(ChirpTimelineEntity.class, userId)
                     .ask(new AddChirp(chirp))
                     .thenApply(done -> NotUsed.getInstance());
+        };
+    }
+
+    @Override
+    public ServiceCall<NotUsed, PSequence<Chirp>> someChirps(String userId) {
+        return req -> {
+            return chirps.getRecentChirps(TreePVector.singleton(userId));
         };
     }
 

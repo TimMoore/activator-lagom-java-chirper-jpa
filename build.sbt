@@ -64,6 +64,7 @@ lazy val chirpImpl = project("chirp-impl")
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceJpa,
       "org.hibernate" % "hibernate-core" % "5.2.5.Final",
+      "com.h2database" % "h2" % "1.4.196",
       lagomJavadslPubSub,
       lagomJavadslTestKit
     ) ++ BuildTarget.additionalLibraryDependencies
@@ -98,63 +99,6 @@ lazy val activityStreamImpl = project("activity-stream-impl")
   )
   .dependsOn(activityStreamApi, chirpApi, friendApi)
 
-lazy val frontEnd = project("front-end")
-  .enablePlugins(PlayJava, LagomPlay)
-  .disablePlugins(PlayLayoutPlugin)
-  .settings(
-    version := "1.0-SNAPSHOT",
-    routesGenerator := InjectedRoutesGenerator,
-    dockerRepository := Some("chirper"),
-    dockerUpdateLatest := true,
-    dockerEntrypoint ++= """-Dplay.crypto.secret="${APPLICATION_SECRET:-none}" -Dhttp.address="$WEB_BIND_IP" -Dhttp.port="$WEB_BIND_PORT"""".split(" ").toSeq,
-    dockerCommands :=
-      dockerCommands.value.flatMap {
-        case ExecCmd("ENTRYPOINT", args @ _*) => Seq(Cmd("ENTRYPOINT", args.mkString(" ")))
-        case v => Seq(v)
-      },
-    resolvers += bintrayRepo("hajile", "maven"),
-    libraryDependencies ++= Seq(
-      "org.webjars" % "foundation" % "5.5.2",
-      "org.webjars" %% "webjars-play" % "2.5.0",
-      lagomJavadslClient
-    ) ++ BuildTarget.additionalLibraryDependencies,
-
-    includeFilter in webpack := "*.js" || "*.jsx",
-    compile in Compile := (compile in Compile).dependsOn(webpack.toTask("")).value,
-    mappings in (Compile, packageBin) := {
-      val compiledJsFiles = (WebKeys.public in Assets).value.listFiles().toSeq
-
-      val publicJsFileMappings = compiledJsFiles.map { jsFile =>
-        jsFile -> s"public/${jsFile.getName}"
-      }
-
-      val webJarsPathPrefix = SbtWeb.webJarsPathPrefix.value
-      val compiledWebJarsBaseDir = (classDirectory in Assets).value / webJarsPathPrefix
-      val compiledFilesWebJars = compiledJsFiles.map { compiledJs =>
-        val compiledJsWebJar = compiledWebJarsBaseDir / compiledJs.getName
-        Files.copy(compiledJs.toPath, compiledJsWebJar.toPath, StandardCopyOption.REPLACE_EXISTING)
-        compiledJsWebJar
-      }
-      val webJarJsFileMappings = compiledFilesWebJars.map { jsFile =>
-        jsFile -> s"${webJarsPathPrefix}/${jsFile.getName}"
-      }
-
-      (mappings in (Compile, packageBin)).value ++ publicJsFileMappings ++ webJarJsFileMappings
-    },
-    sourceDirectory in Assets := baseDirectory.value / "src" / "main" / "resources" / "assets",
-    resourceDirectory in Assets := baseDirectory.value / "src" / "main" / "resources" / "public",
-
-    PlayKeys.playMonitoredFiles ++=
-      (sourceDirectories in (Compile, TwirlKeys.compileTemplates)).value :+
-      (sourceDirectory in Assets).value :+
-      (resourceDirectory in Assets).value,
-
-    WebpackKeys.envVars in webpack += "BUILD_SYSTEM" -> "sbt",
-
-    // Remove to use Scala IDE
-    EclipseKeys.createSrc := EclipseCreateSrc.ValueSet(EclipseCreateSrc.ManagedClasses, EclipseCreateSrc.ManagedResources)
-  )
-
 lazy val loadTestApi = project("load-test-api")
   .settings(
     version := "1.0-SNAPSHOT",
@@ -175,7 +119,7 @@ def project(id: String) = Project(id, base = file(id))
   .settings(jacksonParameterNamesJavacSettings: _*) // applying it to every project even if not strictly needed.
 
 
-// See https://github.com/FasterXML/jackson-module-parameter-names
+// See https://github.com/FasterXML/jackson-module-paraLoameter-names
 lazy val jacksonParameterNamesJavacSettings = Seq(
   javacOptions in compile += "-parameters"
 )
